@@ -1,44 +1,41 @@
 <?php
 # Author: Spencer J Potts
 # Date:
-#
+# File Style: https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md
 #
 class MySqlConnect {
-  #
   protected static $conn;
   function __construct($address, $user, $password, $database) {
     self::$conn = mysqli_connect($address, $user, $password, $database);
     if (mysqli_connect_errno()) {
-
-  		# Print error message
   		echo "DATABASE CONNECTION FAILED.", mysqli_connect_error();
-
-  		# Exit current
   		exit();
   	}
   }
 }
 class MySqlDatabaseObject extends MySqlConnect {
   private const SELECT = 'SELECT * FROM ';
-
   private static $table;
 
-  function __construct($a, $u, $p, $db){
-    parent::__construct($a, $u, $p, $db);
-  }
-
-  public static function setTable($t) {
+  public static function setTable($t): void {
     self::$table = $t;
   }
 
-  public static function select($args=null) {
+  public static function select($args=null, $where=null) {
     # query constraint
     # must be string
-    $q = ($args != null ? "SELECT $args FROM " . self::$table : self::SELECT . self::$table);
+    if ($args != null)
+      $q = "SELECT $args FROM " . self::$table;
+    else
+      $q = self::SELECT . self::$table;
+
+    if ($where != null) {
+      $q .= " WHERE " . $where;
+    }
     $r = mysqli_query(parent::$conn, $q);
     if (!$r)
       # table doesn't exist;
-      # return doesnt exist number.
+      # return doesn't exist number.
       # "Failed to connect to MySQL: " . mysqli_connect_error();
       return false;
     else
@@ -50,12 +47,19 @@ class MySqlDatabaseObject extends MySqlConnect {
           yield $row;
   }
 }
+class MySqlHelper extends MySqlDatabaseObject {
+  function __construct($a, $u, $p, $db) {
+    MySqlConnect::__construct($a, $u, $p, $db);
+  }
+}
 
-$connection = new MySqlDatabaseObject('localhost', 'root', '', 'test');
+$connection = new MySqlHelper('localhost', 'root', '', 'test');
 
 $connection->setTable('person');
-foreach($connection->select('name, id') as $value) {
+foreach($connection->select($args='name, id', $where='id = 1') as $value) {
   echo $value['id'];
   echo $value['name'];
+  echo "<br/>";
 }
+
 ?>
