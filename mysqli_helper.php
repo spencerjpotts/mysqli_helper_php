@@ -53,13 +53,4 @@ class MySqlHelper extends MySqlDatabaseObject {
   }
 }
 
-$connection = new MySqlHelper('localhost', 'root', '', 'test');
-
-$connection->setTable('person');
-foreach($connection->select($args='name, id', $where='id = 1') as $value) {
-  echo $value['id'];
-  echo $value['name'];
-  echo "<br/>";
-}
-
 ?>
